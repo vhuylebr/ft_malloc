@@ -23,8 +23,8 @@
 # define SMALL_PAGE_MAX 32
 # define SMALL_MAX (32 * 4096)
 
+# define MALLOQUED 1
 typedef struct		s_link {
-    struct s_link	*prev;
     struct s_link	*next;
     size_t          size;
     void            *addr;
@@ -37,6 +37,8 @@ typedef struct      s_data {
     t_link          *small;
     size_t          nb_small;
     t_link          *large;
+    void            *page_tny;
+    void            *small_page;
 }                   t_data;
 
 t_data data;
