@@ -12,37 +12,39 @@
 
 #ifndef FT_MALLOC_H
 
-# include <stdio.h>
-# include <sys/mman.h>
+#include <stdio.h>
+#include <sys/mman.h>
 
-# define TNY 128
-# define TNY_PAGE_MAX 8
-# define TNY_MAX (8 * 4096)
+#define TNY 128
+#define TNY_PAGE_MAX 8
+#define TNY_MAX (8 * 4096)
 
-# define SMALL 512
-# define SMALL_PAGE_MAX 32
-# define SMALL_MAX (32 * 4096)
+#define SMALL 512
+#define SMALL_PAGE_MAX 32
+#define SMALL_MAX (32 * 4096)
 
-# define MALLOQUED 1
-typedef struct		s_link {
-    struct s_link	*next;
-    size_t          size;
-    void            *addr;
-    char            isFree;
-}					t_link;
+#define MALLOQUED 1
+typedef struct s_link
+{
+  struct s_link *next;
+  size_t size;
+  void *addr;
+  char isFree;
+} t_link;
 
-typedef struct      s_data {
-    t_link          *tny;
-    size_t          nb_tny;
-    t_link          *small;
-    size_t          nb_small;
-    t_link          *large;
-    void            *page_tny;
-    void            *small_page;
-}                   t_data;
+typedef struct s_data
+{
+  t_link *tny;
+  size_t nb_malloc_tny;
+  t_link *small;
+  size_t nb_small;
+  t_link *large;
+  void *page_tny;
+  void *small_page;
+} t_data;
 
 t_data data;
-#endif /* FT_MALLOC_H */ 
+#endif /* FT_MALLOC_H */
 
 /*    int i = 0;
 while (1) 

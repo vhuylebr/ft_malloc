@@ -12,52 +12,66 @@
 
 #include "ft_malloc.h"
 
-#include <stdlib.h>
+//#include <stdlib.h>
 
-void    *ft_malloc(size_t size)
+void *ft_malloc(size_t size)
 {
-    static size_t   nb_malloc_tny;
-    t_link            *tmp;
+  t_link *tmp;
 
-    if (size < 96)
+  if (size < 128 - sizeof(t_link))
+  {
+    if (data.nb_malloc_tny == 0)
     {
-        if (nb_malloc_tny == 0 || nb_malloc_tny % 256 == 0)
-        {
-            data.page_tny = mmap(0, TNY_MAX, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0);
-        }
-        tmp = data.tny;
-        while (tmp != 0)
-        {
-            tmp = tmp->next;
-        }
-        tmp = data.page_tny + (nb_malloc_tny * 128);
-        tmp->size = size;
-        tmp->addr = data.page_tny + sizeof(t_link) + (nb_malloc_tny * 128);
-        tmp->isFree = MALLOQUED;
-        
-        ++nb_malloc_tny;
-        return (data.tny->addr);
+      printf("testt");
+      data.page_tny = mmap(0, TNY_MAX, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0);
+      data.tny = data.page_tny + (data.nb_malloc_tny * 128);
+      data.tny->size = size;
+      data.tny->isFree = MALLOQUED;
+      data.tny->addr = data.page_tny + sizeof(t_link) + (data.nb_malloc_tny * 128);
+      ++data.nb_malloc_tny;
+      data.tny->next = NULL;
+      return (data.tny->addr);
     }
-    return(0);
+    if (data.nb_malloc_tny % 256 == 0)
+    {
+      printf("22222");
+      data.page_tny = mmap(0, TNY_MAX, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0);
+    }
+    tmp = data.tny;
+    while (tmp->next != NULL)
+    {
+      printf("int malloc i = %i\n", (int)tmp->next->size);
+      tmp = tmp->next;
+    }
+    printf("coucou%i\n", (int)(data.nb_malloc_tny % 256 * 128));
+    tmp->next = data.page_tny + (data.nb_malloc_tny % 256 * 128);
+    tmp->next->size = size;
+    tmp->next->isFree = MALLOQUED;
+    tmp->next->addr = data.page_tny + sizeof(t_link) + (data.nb_malloc_tny * 128);
+    ++data.nb_malloc_tny;
+    tmp->next->next = NULL;
+    return (tmp->addr);
+  }
+  return (0);
 }
 
-int main() 
+int main()
 {
-    char    *result;
-    // int i = 0;
+  char *result;
+  //int i = -32;
 
+  //printf("%i\n", (int)data.tny->size);
+  while (1)
+  {
     result = ft_malloc(12);
-    /*while (i < 12)
-    {
-        printf("%p\n%i\n", &result[i], ((int*)data.tny)[i]);
-        ++i;
-    }
-    i = 0;
-    result = ft_malloc(12);
-    while (i < 12)
-    {
-        printf("%p\n%i\n", &result[i], ((int*)data.tny)[i]);
-        ++i;
-    }
-    return (0);*/
+    result[0] = 'a';
+    printf("%s\n", result);
+  }
+ /*while (i < 128 * 11)
+  {
+    printf("%i %i\n", i, result[i]);
+    ++i;
+  }
+  i = 0;*/
+  return (0);
 }
