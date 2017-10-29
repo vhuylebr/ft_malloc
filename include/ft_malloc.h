@@ -23,7 +23,7 @@
 #define SMALL_PAGE_MAX 32
 #define SMALL_MAX (32 * 4096)
 
-#define MALLOQUED 1
+#define MALLOCATED 1
 typedef struct s_link
 {
   struct s_link *next;
