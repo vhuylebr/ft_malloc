@@ -37,11 +37,16 @@ typedef struct s_data
   t_link *tny;
   size_t nb_malloc_tny;
   t_link *small;
-  size_t nb_small;
+  size_t nb_malloc_small;
   t_link *large;
+  size_t nb_malloc_large;  
   void *page_tny;
   void *small_page;
 } t_data;
+
+void  *tiny_malloc(size_t size);
+void  *small_malloc(size_t size);
+void *ft_malloc(size_t size);
 
 t_data data;
 #endif /* FT_MALLOC_H */

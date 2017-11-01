@@ -10,11 +10,13 @@
 #                                                                              #
 # **************************************************************************** #
 
-NAME    =       ft_malloc
+NAME    =       ft_malloc.a
 
 CC      =       gcc
 
-SRCS    =		src/main.c
+SRCS    =		src/main.c \
+						src/tiny.c \
+						src/small.c
 
 
 RM      =       rm -f
@@ -25,8 +27,10 @@ CFLAGS	=		-Wall -Werror -Wextra -I include
 
 all: $(NAME)
 
-$(NAME): $(OBJS)
-	$(CC) $(OBJS) -o $(NAME)
+$(NAME):	$(OBJS)
+					ar rc $(NAME) $(OBJ)
+					ranlib $(NAME)
+	#$(CC) $(OBJS) -o $(NAME)
 
 clean :
 	$(RM) $(OBJS)
