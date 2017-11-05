@@ -10,7 +10,7 @@
 #                                                                              #
 # **************************************************************************** #
 
-NAME    =       ft_malloc.a
+NAME    =       ft_malloc
 
 CC      =       gcc
 
@@ -28,9 +28,10 @@ CFLAGS	=		-Wall -Werror -Wextra -I include
 all: $(NAME)
 
 $(NAME):	$(OBJS)
-					ar rc $(NAME) $(OBJ)
-					ranlib $(NAME)
-	#$(CC) $(OBJS) -o $(NAME)
+					$(CC) $(OBJS) -o $(NAME)
+
+#					ar rc $(NAME) $(OBJ)
+#					ranlib $(NAME)
 
 clean :
 	$(RM) $(OBJS)

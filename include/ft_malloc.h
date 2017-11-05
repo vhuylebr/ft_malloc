@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ft_malloc.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vhuylebr <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: marvin <marvin@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/10/28 12:59:14 by vhuylebr          #+#    #+#             */
-/*   Updated: 2017/10/28 12:59:16 by vhuylebr         ###   ########.fr       */
+/*   Updated: 2017/11/05 19:43:36 by marvin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,20 @@ typedef struct s_link
   char isFree;
 } t_link;
 
+typedef struct s_type
+{
+  t_link *list;
+  void    *page;
+  size_t  nb_malloc;
+} t_type;
+
+typedef struct s_data_test
+{
+  t_type  tny;
+  t_type  small;
+  size_t  size;
+} t_data_test;
+
 typedef struct s_data
 {
   t_link *tny;
@@ -40,15 +54,17 @@ typedef struct s_data
   size_t nb_malloc_small;
   t_link *large;
   size_t nb_malloc_large;  
-  void *page_tny;
   void *small_page;
+  void *tny_page;
+
 } t_data;
 
 void  *tiny_malloc(size_t size);
 void  *small_malloc(size_t size);
 void *ft_malloc(size_t size);
 
-t_data data;
+t_data  data;
+//static  t_data_test all;
 #endif /* FT_MALLOC_H */
 
 /*    int i = 0;
