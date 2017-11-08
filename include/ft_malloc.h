@@ -34,9 +34,13 @@ typedef struct s_link
 
 typedef struct s_type
 {
-  t_link *list;
+  t_link  *list;
   void    *page;
+  size_t  size_page;
+  size_t  size_block;
   size_t  nb_malloc;
+  t_link  *end;
+  t_link  *free_list;
 } t_type;
 
 typedef struct s_data_test
@@ -64,7 +68,12 @@ void  *small_malloc(size_t size);
 void *ft_malloc(size_t size);
 
 t_data  data;
-//static  t_data_test all;
+static  t_data_test all;
+/*all.tny.size_block = 128;
+all.tny.size_page = (8 * 4096);
+all.small.size_block = (512);
+all.small.size_page = (32 * 4096);*/
+
 #endif /* FT_MALLOC_H */
 
 /*    int i = 0;
