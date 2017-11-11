@@ -39,6 +39,7 @@ typedef struct s_type
   size_t  size_page;
   size_t  size_block;
   size_t  nb_malloc;
+  char    size;
   t_link  *end;
   t_link  *free_list;
 } t_type;
