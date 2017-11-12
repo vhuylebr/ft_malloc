@@ -27,9 +27,8 @@
 typedef struct s_link
 {
   struct s_link *next;
-  size_t size;
+  char size;
   void *addr;
-  char isFree;
 } t_link;
 
 typedef struct s_type
@@ -64,12 +63,14 @@ typedef struct s_data
 
 } t_data;
 
-void  *tiny_malloc(size_t size);
-void  *small_malloc(size_t size);
+/*void  *tiny_malloc(size_t size);
+void  *small_malloc(size_t size);*/
+void  ft_free(void *ptr);
 void *ft_malloc(size_t size);
 
 t_data  data;
 static  t_data_test all;
+int i;
 /*all.tny.size_block = 128;
 all.tny.size_page = (8 * 4096);
 all.small.size_block = (512);

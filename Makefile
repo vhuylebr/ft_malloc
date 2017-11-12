@@ -14,9 +14,7 @@ NAME    =       ft_malloc
 
 CC      =       gcc
 
-SRCS    =		src/main.c \
-						src/tiny.c \
-						src/small.c
+SRCS    =		src/main.c 
 
 
 RM      =       rm -f

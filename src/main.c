@@ -12,8 +12,6 @@
 
 #include "ft_malloc.h"
 
-//static  t_data_test all;
-
 void  *first_block(t_type *test)
 {
   all.tny.size_block = 128;
@@ -22,16 +20,16 @@ void  *first_block(t_type *test)
   all.small.size_page = (32 * 4096);
   all.small.size = 2;
   all.tny.size = 1;
-  all.tny.free_list = NULL;
-  all.small.free_list = NULL;
-  printf("%i\n", ((int)(*test).size_page));
+  //all.tny.free_list = NULL;
+  
+  //all.small.free_list = NULL;
   (*test).page = mmap(0, (*test).size_page, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0);
   (*test).list = (*test).page + ((*test).nb_malloc * (*test).size_block);
   (*test).list->size = (*test).size;
-  (*test).list->isFree = MALLOCATED;
   (*test).list->addr = (*test).page + sizeof(t_link) + ((*test).nb_malloc * (*test).size_block);
   ++(*test).nb_malloc;
   (*test).list->next = NULL;
+  (*test).end = (*test).list;
   return ((*test).list->addr);
 }
 
@@ -39,40 +37,21 @@ void  *add_block(t_type *test)
 {
   t_link  *tmp;
 
-  tmp = (*test).list;
-  if (tmp->isFree == 0)
-  {
-    tmp->isFree = MALLOCATED;
-    tmp->size = all.size;
-    return (tmp->addr);
-  }
-  // verifier la list free
   if ((*test).free_list)
   {
-    printf("coucou\n");
     tmp = (*test).free_list;
     (*test).free_list = (*test).free_list->next;
     return (tmp->addr);
   }
-  // si different de null retourner ce block en changeant le header
-  // retirer de list free le premier maillon free = free->next
-  /*while (tmp->next != NULL)
-  {
-    if (tmp->next->isFree == 0)
-    {
-      tmp->next->size = (*test).size;
-      tmp->next->isFree = MALLOCATED;
-      return (tmp->next->addr);
-    }    
-    tmp = tmp->next;
-  }*/
+  tmp = (*test).end;
   tmp->next = (*test).page + ((*test).nb_malloc % 256 * (*test).size_block);
   tmp->next->next = NULL;
   tmp->next->size =  (*test).size;
-  tmp->next->isFree = MALLOCATED;
   tmp->next->addr = (*test).page + sizeof(t_link) + ((*test).nb_malloc % 256 * (*test).size_block);
+  (*test).end = tmp->next;
   ++(*test).nb_malloc;
-  return (tmp->next->addr);  
+  tmp = (*test).list;
+  return ((*test).end->addr);  
 }
 
 void *test_malloc(t_type *test)
@@ -88,6 +67,57 @@ void *test_malloc(t_type *test)
   return (add_block(test));
 }
 
+void ft_free(void *ptr)
+{
+  t_link *tmp;
+/*  i = 1;
+  while ((unsigned int)i < sizeof(t_link))
+  {
+    printf("in free %i %i\n", ((char*)ptr)[-i], i);
+    ++i;
+  }*/
+  if (((char*)ptr)[-16] == 1)
+  {
+    if (all.tny.free_list == NULL)
+    {
+      all.tny.free_list = ptr - sizeof(t_link);
+      all.tny.free_list->addr = ptr;      
+      all.tny.free_list->next = NULL;
+      return ;
+    }
+    //tmp = all.tny.free_list;
+    tmp = ptr - sizeof(t_link);
+    tmp->addr = ptr;
+    tmp->next = all.tny.free_list;
+    all.tny.free_list = tmp;
+    /*while (tmp != NULL)
+    {
+      printf("ptr %s %s\n", (char*)tmp->addr, (char*)ptr);
+      tmp = tmp->next;
+    }
+    printf("ccc");*/
+    return ;
+  }
+  if (((char*)ptr)[-16] == 2)
+  {
+    if (all.small.free_list == NULL)
+    {
+      all.small.free_list = ptr - sizeof(t_link);
+      all.small.free_list->addr = ptr;
+      all.small.free_list->next = NULL;
+      return ;      
+    }
+    tmp = all.small.free_list;
+    all.small.free_list = ptr - sizeof(t_link);
+    all.small.free_list->addr = ptr;      
+    all.small.free_list->next = tmp;
+    return ;
+  }
+  // add en debut de la list free small ou tny si la list est different de null
+  // sinon remplir le premier maillon
+  ptr = 0;
+}
+
 void *ft_malloc(size_t size)
 {
   t_link *tmp;
@@ -95,19 +125,14 @@ void *ft_malloc(size_t size)
   all.size = size;
   if (size < 128 - sizeof(t_link))
   {
-    //printf("tiny\n");
     return (test_malloc(&all.tny));  
-    //return (tiny_malloc(size));
   }
   if (size < 512 - sizeof(t_link))
   {
-    //printf("small n=%i\n", (int)data.nb_malloc_small);
     return (test_malloc(&all.small));
-//  return (small_malloc(size));
   }
   else
   {
-    printf("large %i\n", (int)size);
     if (data.nb_malloc_large == 0)
     {
       data.large = mmap(0, size + sizeof(t_link), PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0);
@@ -130,58 +155,21 @@ void *ft_malloc(size_t size)
   return (0);
 }
 
-
-void ft_free(void *ptr)
-{
-  t_link *tmp;
-  // verif de la taille
-  if (((char*)ptr)[-24] == 1)
-  {
-    printf("in free\n");
-    if (all.tny.free_list == NULL)
-    {
-      all.tny.free_list = ptr - 32;
-      all.tny.free_list->addr = ptr;      
-      all.tny.free_list->next = NULL;
-      return ;
-    }
-    tmp = all.tny.free_list;
-    all.tny.free_list = ptr - 32;
-    all.tny.free_list->addr = ptr;      
-    all.tny.free_list->next = tmp;
-    return ;
-  }
-  if (((char*)ptr)[-24] == 2)
-  {
-    if (all.small.free_list == NULL)
-    {
-      all.small.free_list = ptr - 32;
-      all.small.free_list->addr = ptr;
-      all.small.free_list->next = NULL;
-      return ;      
-    }
-  }
-  // add en debut de la list free small ou tny si la list est different de null
-  // sinon remplir le premier maillon
-  if (((char *)ptr)[-8] == 1)
-  {
-    ((char *)ptr)[-8] = 0;
-  }
-  ptr = 0;
-}
-
 int main()
 {
   char **result;
   int i = 0;
   //t_link *tmp;
 
-  result = (char**)ft_malloc(sizeof(char**) * 10);
+  result = (char**)ft_malloc(sizeof(char**) * 10000);
   /*result[12] = 'a';  
   result = ft_malloc(13);
   result[6] = 'a';
   ft_free(result);*/
-  while (i < 3)
+  //while (1)
+  //{
+  i = 0;
+  while (i < 3000)
   {
     result[i] = ft_malloc(12);
     if (i == 0)
@@ -196,18 +184,19 @@ int main()
       i++;
     }
     --i;
-    printf("free\n");
+    //printf("free %s\n", result[0]);
     while (i >= 0)
     {
       //result[i] = ft_malloc(12);
       //result[119] = 'a';  
       //result = ft_malloc(12);
-      printf("%s\n", result[i]);
+      //if (i == 1 || i == 2 || i == 0)
+        //printf("1 2 3 %s\n", result[i]);
     ft_free(result[i]);
     --i;
   }
   i  = 0;
-  while (i < 3)
+  while (i < 230)
   {
     result[i] = ft_malloc(12);
     if (i == 0)
@@ -222,16 +211,17 @@ int main()
       i++;
     }
     --i;
-    printf("free\n");
+   // printf("free\n");
     while (i >= 0)
     {
       //result[i] = ft_malloc(12);
       //result[119] = 'a';  
       //result = ft_malloc(12);
-      printf("%s\n", result[i]);
+      //printf("%s\n", result[i]);
     ft_free(result[i]);
     --i;
   }
+//}
 /*  i = 0;
   tmp = data.small;
   while (tmp != NULL)
