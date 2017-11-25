@@ -65,8 +65,8 @@ typedef struct s_data
 
 /*void  *tiny_malloc(size_t size);
 void  *small_malloc(size_t size);*/
-void  ft_free(void *ptr);
-void *ft_malloc(size_t size);
+void  free(void *ptr);
+void *malloc(size_t size);
 
 t_data  data;
 static  t_data_test all;

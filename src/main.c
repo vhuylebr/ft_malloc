@@ -6,11 +6,13 @@
 /*   By: vhuylebr <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/10/28 12:59:25 by vhuylebr          #+#    #+#             */
-/*   Updated: 2017/10/28 12:59:29 by vhuylebr         ###   ########.fr       */
+/*   Updated: 2017/11/25 16:57:33 by vhuylebr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_malloc.h"
+#include <stdio.h>
+#include <unistd.h>
 
 void  *first_block(t_type *test)
 {
@@ -20,9 +22,6 @@ void  *first_block(t_type *test)
   all.small.size_page = (32 * 4096);
   all.small.size = 2;
   all.tny.size = 1;
-  //all.tny.free_list = NULL;
-  
-  //all.small.free_list = NULL;
   (*test).page = mmap(0, (*test).size_page, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0);
   (*test).list = (*test).page + ((*test).nb_malloc * (*test).size_block);
   (*test).list->size = (*test).size;
@@ -36,7 +35,6 @@ void  *first_block(t_type *test)
 void  *add_block(t_type *test)
 {
   t_link  *tmp;
-
   if ((*test).free_list)
   {
     tmp = (*test).free_list;
@@ -51,6 +49,10 @@ void  *add_block(t_type *test)
   (*test).end = tmp->next;
   ++(*test).nb_malloc;
   tmp = (*test).list;
+  if ((*test).size_block == 128)
+    printf("tny %zu\n", (*test).nb_malloc);
+  if ((*test).size_block > 128)
+    printf("small %zu\n", (*test).nb_malloc);
   return ((*test).end->addr);  
 }
 
@@ -67,16 +69,20 @@ void *test_malloc(t_type *test)
   return (add_block(test));
 }
 
-void ft_free(void *ptr)
+void free(void *ptr)
 {
-  t_link *tmp;
+	if (!ptr)
+	{
+		return ;
+	}
+  //t_link *tmp;
 /*  i = 1;
   while ((unsigned int)i < sizeof(t_link))
   {
     printf("in free %i %i\n", ((char*)ptr)[-i], i);
     ++i;
   }*/
-  if (((char*)ptr)[-16] == 1)
+  /*if (((char*)ptr)[-16] == 1)
   {
     if (all.tny.free_list == NULL)
     {
@@ -90,12 +96,12 @@ void ft_free(void *ptr)
     tmp->addr = ptr;
     tmp->next = all.tny.free_list;
     all.tny.free_list = tmp;
-    /*while (tmp != NULL)
+    while (tmp != NULL)
     {
       printf("ptr %s %s\n", (char*)tmp->addr, (char*)ptr);
       tmp = tmp->next;
     }
-    printf("ccc");*/
+    printf("ccc");
     return ;
   }
   if (((char*)ptr)[-16] == 2)
@@ -111,17 +117,18 @@ void ft_free(void *ptr)
     all.small.free_list = ptr - sizeof(t_link);
     all.small.free_list->addr = ptr;      
     all.small.free_list->next = tmp;
+	*/
     return ;
-  }
+  //}
   // add en debut de la list free small ou tny si la list est different de null
   // sinon remplir le premier maillon
-  ptr = 0;
+  //ptr = 0;
 }
-
-void *ft_malloc(size_t size)
+void *malloc(size_t size)
 {
+	if (!size)
+		return (0);
   t_link *tmp;
-
   all.size = size;
   if (size < 128 - sizeof(t_link))
   {
@@ -155,86 +162,29 @@ void *ft_malloc(size_t size)
   return (0);
 }
 
-int main()
+void  *realloc(void *ptr, size_t size)
 {
-  char **result;
-  int i = 0;
-  //t_link *tmp;
+  if (size == 0 && ptr)
+  {
+    free(ptr);
+  }
+  if (size > 0 && !ptr)
+  {
+    return (malloc(size));
+  }
+  if (size == 0 && !ptr)
+  {
+    return (NULL);
+  }
+  free(ptr);
+  return (malloc(size));
+}
 
-  result = (char**)ft_malloc(sizeof(char**) * 10000);
-  /*result[12] = 'a';  
-  result = ft_malloc(13);
-  result[6] = 'a';
-  ft_free(result);*/
-  //while (1)
-  //{
-  i = 0;
-  while (i < 3000)
+void  *calloc(size_t nmemb, size_t size)
+{
+  if (!nmemb || !size)
   {
-    result[i] = ft_malloc(12);
-    if (i == 0)
-      result[i][0] = 'a';
-    if (i == 1)
-      result[i][0] = 'b';
-    if (i == 2)
-      result[i][0] = 'c';
-      //result = ft_malloc(12);
-      //result[11] = 'a';  
-      //ft_free(result);
-      i++;
-    }
-    --i;
-    //printf("free %s\n", result[0]);
-    while (i >= 0)
-    {
-      //result[i] = ft_malloc(12);
-      //result[119] = 'a';  
-      //result = ft_malloc(12);
-      //if (i == 1 || i == 2 || i == 0)
-        //printf("1 2 3 %s\n", result[i]);
-    ft_free(result[i]);
-    --i;
+    return (NULL);
   }
-  i  = 0;
-  while (i < 230)
-  {
-    result[i] = ft_malloc(12);
-    if (i == 0)
-      result[i][0] = 'e';
-    if (i == 1)
-      result[i][0] = 'f';
-    if (i == 2)
-      result[i][0] = 'g';
-      //result = ft_malloc(12);
-      //result[11] = 'a';  
-      //ft_free(result);
-      i++;
-    }
-    --i;
-   // printf("free\n");
-    while (i >= 0)
-    {
-      //result[i] = ft_malloc(12);
-      //result[119] = 'a';  
-      //result = ft_malloc(12);
-      //printf("%s\n", result[i]);
-    ft_free(result[i]);
-    --i;
-  }
-//}
-/*  i = 0;
-  tmp = data.small;
-  while (tmp != NULL)
-  {
-    ++i;
-    printf("nombre mallocated %i\n", i);
-    tmp = tmp->next;
-  }
-  while (i < 128 * 11)
-  {
-    printf("%i %i\n", i, result[i]);
-    ++i;
-  }
-  i = 0;*/
-  return (0);
+  return (malloc(nmemb * size));
 }
