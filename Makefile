@@ -26,7 +26,7 @@ CFLAGS	=		-Wall -Werror -Wextra -I include
 all: $(NAME)
 
 $(NAME):	$(OBJS)
-					$(CC) -shared $(OBJS) -o $(NAME)
+					$(CC) -o $(NAME) -fpic $(OBJS) 
 
 #					ar rc $(NAME) $(OBJ)
 #					ranlib $(NAME)

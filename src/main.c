@@ -49,15 +49,15 @@ void  *add_block(t_type *test)
   (*test).end = tmp->next;
   ++(*test).nb_malloc;
   tmp = (*test).list;
-  if ((*test).size_block == 128)
-    printf("tny %zu\n", (*test).nb_malloc);
-  if ((*test).size_block > 128)
-    printf("small %zu\n", (*test).nb_malloc);
   return ((*test).end->addr);  
 }
 
 void *test_malloc(t_type *test)
 {
+/*if ((*test).size_block == 128)
+    printf("tny %zu\n", (*test).nb_malloc);
+  if ((*test).size_block > 128)
+    printf("small %zu\n", (*test).nb_malloc);*/
   if ((*test).nb_malloc == 0)
   {
     return (first_block(test));
@@ -71,18 +71,19 @@ void *test_malloc(t_type *test)
 
 void free(void *ptr)
 {
-	if (!ptr)
+  //write(1, "free\n", 5);
+  if (!ptr)
 	{
-		return ;
-	}
-  //t_link *tmp;
-/*  i = 1;
+    return ;
+  }
+  t_link *tmp;
+  /*  i = 1;
   while ((unsigned int)i < sizeof(t_link))
   {
     printf("in free %i %i\n", ((char*)ptr)[-i], i);
     ++i;
   }*/
-  /*if (((char*)ptr)[-16] == 1)
+  if (((char*)ptr)[-16] == 1)
   {
     if (all.tny.free_list == NULL)
     {
@@ -96,12 +97,6 @@ void free(void *ptr)
     tmp->addr = ptr;
     tmp->next = all.tny.free_list;
     all.tny.free_list = tmp;
-    while (tmp != NULL)
-    {
-      printf("ptr %s %s\n", (char*)tmp->addr, (char*)ptr);
-      tmp = tmp->next;
-    }
-    printf("ccc");
     return ;
   }
   if (((char*)ptr)[-16] == 2)
@@ -117,25 +112,26 @@ void free(void *ptr)
     all.small.free_list = ptr - sizeof(t_link);
     all.small.free_list->addr = ptr;      
     all.small.free_list->next = tmp;
-	*/
-    return ;
-  //}
+	  return ;
+  }
   // add en debut de la list free small ou tny si la list est different de null
   // sinon remplir le premier maillon
   //ptr = 0;
 }
 void *malloc(size_t size)
 {
-	if (!size)
-		return (0);
-  t_link *tmp;
+  if (!size)
+  return (0);
+   t_link *tmp;
   all.size = size;
   if (size < 128 - sizeof(t_link))
   {
+    write(1, "tny\n", 4);
     return (test_malloc(&all.tny));  
   }
   if (size < 512 - sizeof(t_link))
   {
+    write(1, "small\n", 6);
     return (test_malloc(&all.small));
   }
   else
@@ -143,19 +139,17 @@ void *malloc(size_t size)
     if (data.nb_malloc_large == 0)
     {
       data.large = mmap(0, size + sizeof(t_link), PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0);
-      data.large->size = size;
+      data.large->size = 3;
       data.large->addr = data.large + sizeof(t_link);
       data.large->next = NULL;
+      ++data.nb_malloc_large;
+      printf("Large\n");
       return (data.large->addr);
     }
-    tmp = data.small;
-    while (tmp->next != NULL)
-    {
-      tmp = tmp->next;
-    }
+    tmp = data.large;
     tmp->next = mmap(0, size + sizeof(t_link), PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0);
     tmp->next->next = NULL;
-    tmp->next->size = size;
+    tmp->next->size = (char)3;
     tmp->next->addr = tmp->next + sizeof(t_link);
     return (tmp->next->addr);
   }
@@ -177,11 +171,14 @@ void  *realloc(void *ptr, size_t size)
     return (NULL);
   }
   free(ptr);
+  write(1, "realloc\n", 8);
+  printf("%zu\n", size);
   return (malloc(size));
 }
 
 void  *calloc(size_t nmemb, size_t size)
 {
+  write(1, "calloc\n", 7);  
   if (!nmemb || !size)
   {
     return (NULL);
